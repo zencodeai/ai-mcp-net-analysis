@@ -1,5 +1,6 @@
 from utils import ConfigParser
 from utils import Logger, LoggerFactory
+from utils import CIDRIPContainer
 
 
 def _main():
@@ -28,8 +29,10 @@ def _main():
     logger.log_critical("This is a critical message.")
     logger.log_debug("This is a debug message.")
 
-    # Add your application logic here
-    # For example, you could call other functions or classes to perform analysis
+    cidr = CIDRIPContainer("192.168.0.120/24")
+    print(f"CIDR: {cidr.get_value()}")
+    print(f"Is IPv4: {cidr.is_ipv4()}")
+    print(f"Is IPv6: {cidr.is_ipv6()}")
 
 
 # Application entry point
