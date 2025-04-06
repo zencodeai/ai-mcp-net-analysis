@@ -1,0 +1,11 @@
+logging:
+  name: "ai-mcp-net-analysis-server"
+  level: "DEBUG"
+  type: "file"
+  file:
+    enabled: true
+    path: "logs/ai-mcp-net-analysis-server.log"
+    max_size_mb: 10
+    backup_count: 5
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
