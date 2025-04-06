@@ -1,5 +1,5 @@
 from utils import ConfigParser
-from utils import AbstractLogger, LoggerFactory
+from utils import Logger, LoggerFactory
 
 
 def _main():
@@ -21,7 +21,7 @@ def _main():
     print(config_data.logging.file.get_value("max_size_mb"))
     print(config_data.logging.file.get_value("test", "default_value"))
 
-    logger: AbstractLogger = LoggerFactory.get_logger(config_data)
+    logger: Logger = LoggerFactory.get_logger(config_data)
     logger.log_info("This is an info message.")
     logger.log_warning("This is a warning message.")
     logger.log_error("This is an error message.")

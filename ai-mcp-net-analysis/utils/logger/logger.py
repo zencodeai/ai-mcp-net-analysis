@@ -8,7 +8,7 @@ class LoggerError(Exception):
     pass
 
 
-class AbstractLogger(ABC):
+class Logger(ABC):
     """
     A generic abstract logger class that defines the structure for logging.
     Subclasses must implement the log_info, log_warning, and log_error methods.

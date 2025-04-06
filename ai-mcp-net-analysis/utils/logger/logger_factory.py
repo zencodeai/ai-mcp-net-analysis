@@ -1,4 +1,4 @@
-from .logger import AbstractLogger, LoggerError
+from .logger import Logger, LoggerError
 from ..config import ConfigData
 from .logger_file import FileLogger
 
@@ -12,13 +12,17 @@ class LoggerFactory:
     _instance = None
 
     @classmethod
-    def get_logger(cls, config_data: ConfigData) -> AbstractLogger:
+    def get_logger(cls, config_data: ConfigData = None) -> Logger:
         """
         Get the singleton logger instance.
         :param config_data: Configuration data for the logger.
         :return: An instance of a logger.
         """
         if cls._instance is None:
+            # Check if configuration data is provided
+            if config_data is None:
+                raise LoggerError("Configuration data is required to create a logger instance.")
+
             # Get logger type
             logger_type = config_data.logging.type
 

@@ -3,7 +3,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 
-from .logger import AbstractLogger, LoggerError
+from .logger import Logger, LoggerError
 from ..config import ConfigData
 
 # Constants
@@ -13,7 +13,7 @@ FILELOG_BACKUP_COUNTS = 5
 FILELOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 
-class FileLogger(AbstractLogger):
+class FileLogger(Logger):
     """
     A logger that writes log messages to a file.
     """
