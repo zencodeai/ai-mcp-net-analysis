@@ -1,6 +1,11 @@
 from schema import Schema, And, Use, Optional
 
 config_schema = Schema({
+    'mcp': {
+        'name': str,
+        'version': str,
+        'description': str,
+    },
     'logging': {
         'name': str,
         'level': And(str, lambda s: s in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']),

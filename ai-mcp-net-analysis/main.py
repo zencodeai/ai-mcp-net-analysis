@@ -1,6 +1,7 @@
 from utils import ConfigParser
 from utils import Logger, LoggerFactory
 from utils import CIDRIPContainer
+from utils import CmdExec
 
 
 def _main():
@@ -29,10 +30,16 @@ def _main():
     logger.log_critical("This is a critical message.")
     logger.log_debug("This is a debug message.")
 
-    cidr = CIDRIPContainer("192.168.0.120/24")
+    cidr = CIDRIPContainer("192.168.1.0/24")
     print(f"CIDR: {cidr.get_value()}")
     print(f"Is IPv4: {cidr.is_ipv4()}")
     print(f"Is IPv6: {cidr.is_ipv6()}")
+
+    # Example command execution
+    command = ["nmap", "-oX", "-", "-sn", "-PE", str(cidr)]
+    result = CmdExec.execute(command)
+    print("Command executed successfully.")
+    print(result)
 
 
 # Application entry point

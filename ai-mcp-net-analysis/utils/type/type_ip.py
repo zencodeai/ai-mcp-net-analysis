@@ -35,3 +35,7 @@ class CIDRIPContainer(DataContainer):
     def is_ipv6(self) -> bool:
         """Check if the CIDR IP address is IPv6."""
         return isinstance(self._network, IPv6Network)
+
+    def __str__(self):
+        """Return the string representation of the CIDR IP address."""
+        return self._network.__str__()
