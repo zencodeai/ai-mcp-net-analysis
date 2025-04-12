@@ -11,12 +11,9 @@ from utils import ConfigParser, ConfigData
 from utils import Logger, LoggerFactory
 
 
-# Create a named server
-mcp = FastMCP("AI-MCP-NET-ANALYSIS")
-
-
 @dataclass
 class AppContext:
+    """Application context"""
     config: ConfigData
     logger: Logger
 
@@ -24,20 +21,27 @@ class AppContext:
 @asynccontextmanager
 async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
     """Manage application lifecycle with type-safe context"""
-
-    # Load the configuration
-    cfg_path = "config/config.yaml"
+    # The config path from the CONFIG_PATH environment variable
+    # or default to "config/config.yaml"
+    cfg_path = os.getenv("MCP_NET_ANALYSIS_CONFIG_PATH", "config/config.yaml")
     config: ConfigParser = ConfigParser.get_config(cfg_path)
-    config_data: ConfigData = config.config
 
-    # Get logger instance
+    # Initialize the logger
+    config_data = config.config
     logger: Logger = LoggerFactory.get_logger(config_data)
 
     try:
+        logger.log_info("Starting the application.")
         yield AppContext(config=config_data, logger=logger)
     finally:
         # Cleanup on shutdown
+        logger: Logger = LoggerFactory.get_logger()
         logger.log_info("Shutting down the application.")
+
+
+# MCP server and config data
+mcp: FastMCP = FastMCP("AI-MCP-NET-ANALYSIS", lifespan=app_lifespan)
+
 
 # Sample ping sweep return
 PING_SWEEP_RESULT = """
@@ -114,28 +118,8 @@ def nmap_ping_sweep(ip_cidr: str, timeout_s: int, ctx: Context) -> str:
     :param ip_cidr: CIDR notation for the IP range to scan.
     :param timeout_s: Timeout in seconds for the scan. 60 seconds is the default.
     """
-    # Load the configuration
-    cfg_path = "config/config.yaml"
-    config: ConfigParser = ConfigParser.get_config(cfg_path)
-    config_data: ConfigData = config.config
 
     # Get logger instance
-    log: Logger = LoggerFactory.get_logger(config_data)
+    log: Logger = ctx.request_context.lifespan_context.logger
     log.log_info(f"Starting ping sweep for {ip_cidr} with timeout {timeout_s} seconds.")
     return PING_SWEEP_RESULT
-
-
-if __name__ == "__main__":
-
-    # The config path from the CONFIG_PATH environment variable
-    # or default to "config/config.yaml"
-    cfg_path = os.getenv("MCP_NET_ANALYSIS_CONFIG_PATH", "config/config.yaml")
-    config: ConfigParser = ConfigParser.get_config(cfg_path)
-
-    # Initialize the logger
-    config_data: ConfigData = config.config
-    logger: Logger = LoggerFactory.get_logger(config_data)
-    logger.log_info("Starting AI-MCP-NET-ANALYSIS server.")
-
-    # Initialize and run the server
-    mcp.run(transport='stdio')
