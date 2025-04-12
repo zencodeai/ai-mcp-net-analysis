@@ -10,6 +10,8 @@ from mcp.server.fastmcp import Context, FastMCP
 from utils import ConfigParser, ConfigData
 from utils import Logger, LoggerFactory
 
+from tools import ToolsNetDiscovery
+
 
 @dataclass
 class AppContext:
@@ -43,70 +45,19 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
 mcp: FastMCP = FastMCP("AI-MCP-NET-ANALYSIS", lifespan=app_lifespan)
 
 
-# Sample ping sweep return
-PING_SWEEP_RESULT = """
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE nmaprun>
-<?xml-stylesheet href="file:///opt/homebrew/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
-<!-- Nmap 7.95 scan initiated Wed Apr  9 20:31:28 2025 as: nmap -oX - -sn -PE 192.168.1.0/24 -->
-<nmaprun scanner="nmap" args="nmap -oX - -sn -PE 192.168.1.0/24"
- start="1744245088"
- startstr="Wed Apr  9 20:31:28 2025"
- version="7.95"
- xmloutputversion="1.05">
-<verbose level="0"/>
-<debugging level="0"/>
-<host><status state="up" reason="syn-ack" reason_ttl="0"/>
-<address addr="192.168.1.1" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="4691" rttvar="5000" to="100000"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.100" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="31995" rttvar="31995" to="159975"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.105" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="6071" rttvar="6071" to="100000"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.124" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="52086" rttvar="52086" to="260430"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.125" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="4705" rttvar="5000" to="100000"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.126" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="221" rttvar="5000" to="100000"/>
-</host>
-<host><status state="up" reason="conn-refused" reason_ttl="0"/>
-<address addr="192.168.1.143" addrtype="ipv4"/>
-<hostnames>
-</hostnames>
-<times srtt="7377" rttvar="7377" to="100000"/>
-</host>
-<runstats>
-<finished
- time="1744245098"
- timestr="Wed Apr  9 20:31:38 2025"
- summary="Nmap done at Wed Apr  9 20:31:38 2025; 256 IP addresses (7 hosts up) scanned in 9.89 seconds"
- elapsed="9.89" exit="success"/><hosts up="7" down="249" total="256"/>
-</runstats>
-</nmaprun>
-"""
+# Process execution
+def process_exception(e: Exception, ctx: Context) -> str:
+    """Handle exceptions during process execution"""
+    # Get logger instance
+    log: Logger = ctx.request_context.lifespan_context.logger
+
+    # Log the entire exception stack trace if level is debug
+    log.log_debug(f"Exception: {e}")
+    log.log_debug(f"Traceback: {e.__traceback__}")
+
+    # Convert the excetpion to a detilled xml format
+    # with type, attributes and message and return it
+    return f"<error type='{type(e).__name__}' message='{str(e)}'>"
 
 
 # Access type-safe lifespan context in tools
@@ -121,5 +72,19 @@ def nmap_ping_sweep(ip_cidr: str, timeout_s: int, ctx: Context) -> str:
 
     # Get logger instance
     log: Logger = ctx.request_context.lifespan_context.logger
-    log.log_info(f"Starting ping sweep for {ip_cidr} with timeout {timeout_s} seconds.")
-    return PING_SWEEP_RESULT
+
+    # Execute tool
+    try:
+        log.log_info("Executing nmap ping sweep.")
+        log.log_debug(f"For {ip_cidr} with timeout {timeout_s} seconds.")
+        result = ToolsNetDiscovery.nmap_ping_sweep(ip_cidr, timeout_s)
+        log.log_debug(f"nmap ping sweep executed successfully:\n{result}")
+        return result
+    except Exception as e:
+        return process_exception(e, ctx)
+
+
+# Run the server
+if __name__ == "__main__":
+    # Start the server
+    mcp.run()
