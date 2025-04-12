@@ -1,3 +1,5 @@
+import logging
+
 from utils import ConfigParser
 from utils import Logger, LoggerFactory
 from utils import CIDRIPContainer
@@ -40,6 +42,9 @@ def _main():
     result = CmdExec.execute(command)
     print("Command executed successfully.")
     print(result)
+
+    log = logging.getLogger(__name__)
+    log.info("This is an info message from the main function.")
 
 
 # Application entry point

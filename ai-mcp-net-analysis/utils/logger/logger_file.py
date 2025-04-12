@@ -47,9 +47,9 @@ class FileLogger(Logger):
         if not log_file.exists():
             log_file.touch()
 
-        # Create the logger
-        self._logger = logging.getLogger(self._name)
-        self._logger.setLevel(self._level)
+        # Configure the root logger
+        logger = logging.getLogger()
+        logger.setLevel(self._level)
 
         # Create a rotating file handler
         self._handler = RotatingFileHandler(
@@ -59,9 +59,11 @@ class FileLogger(Logger):
         )
         self._handler.setLevel(self._level)
         self._handler.setFormatter(logging.Formatter(self._format))
-        self._logger.addHandler(self._handler)
-        # Set the logger to propagate messages to the root logger
-        self._logger.propagate = False
+        logger.addHandler(self._handler)
+
+        # Create the application logger
+        self._logger = logging.getLogger(self._name)
+        self._logger.propagate = True
 
     def log_info(self, message: str) -> None:
         """

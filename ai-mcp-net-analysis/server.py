@@ -1,3 +1,5 @@
+import os
+
 # Add lifespan support for startup/shutdown with strong typing
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
@@ -124,5 +126,16 @@ def nmap_ping_sweep(ip_cidr: str, timeout_s: int, ctx: Context) -> str:
 
 
 if __name__ == "__main__":
+
+    # The config path from the CONFIG_PATH environment variable
+    # or default to "config/config.yaml"
+    cfg_path = os.getenv("MCP_NET_ANALYSIS_CONFIG_PATH", "config/config.yaml")
+    config: ConfigParser = ConfigParser.get_config(cfg_path)
+
+    # Initialize the logger
+    config_data: ConfigData = config.config
+    logger: Logger = LoggerFactory.get_logger(config_data)
+    logger.log_info("Starting AI-MCP-NET-ANALYSIS server.")
+
     # Initialize and run the server
     mcp.run(transport='stdio')
