@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Temporary files
+docker/pyproject.toml
+
+# OSX
+.DS_Store
