@@ -10,7 +10,7 @@ from mcp.server.fastmcp import Context, FastMCP
 from utils import ConfigParser, ConfigData
 from utils import Logger, LoggerFactory
 
-from tools import ToolsNetDiscovery
+from tools import ToolPingSweep
 
 
 @dataclass
@@ -77,7 +77,7 @@ def nmap_ping_sweep(ip_cidr: str, timeout_s: int, ctx: Context) -> str:
     try:
         log.log_info("Executing nmap ping sweep.")
         log.log_debug(f"For {ip_cidr} with timeout {timeout_s} seconds.")
-        result = ToolsNetDiscovery.nmap_ping_sweep(ip_cidr, timeout_s)
+        result = ToolPingSweep.function(ip_cidr, timeout_s)
         log.log_debug(f"nmap ping sweep executed successfully:\n{result}")
         return result
     except Exception as e:
