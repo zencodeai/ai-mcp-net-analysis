@@ -1,6 +1,9 @@
-from dataclasses import dataclass
+from typing import Any
+from pydantic import BaseModel, field_validator
 
-from utils import CmdExec, CIDRIPContainer, TimeoutSecContainer
+from utils import CmdExec
+from utils import CIDRIPContainer
+from utils import TimeoutSecContainer
 from tools.tool import Tool
 
 from mcp.types import Tool as MCPTool
@@ -13,29 +16,30 @@ class ToolPingSweep(Tool):
     """
 
     # Dataclass for function arguments
-    @dataclass
-    class Arguments:
+    class Arguments(BaseModel):
         """
         Arguments for the ping sweep function.
         """
         ip_cidr: str
         timeout_s: int
 
-        def __init__(self, args: dict):
-            """
-            Initialize the Arguments dataclass with the provided arguments.
-            :param args: Dictionary containing the arguments.
-            """
-            self.ip_cidr = args.get("ip_cidr")
-            self.timeout_s = args.get("timeout_s")
+        @field_validator("ip_cidr")
+        def validate_ip_cidr(cls, value: str) -> str:
+            """ Validate the CIDR IP address """
+            _ = CIDRIPContainer(value)
+            return value
+
+        @field_validator("timeout_s")
+        def validate_timeout_s(cls, value: int) -> int:
+            """ Validate the timeout in seconds """
+            _ = TimeoutSecContainer(value)
+            return value
 
     def __init__(self):
         """
         Initialize the ToolPingSweep class.
         """
         super().__init__()
-        # Register the tool with the class nam
-        Tool.register_tool(self.__class__.__name__, self)
 
     def get_tool(self) -> MCPTool:
         """
@@ -66,12 +70,15 @@ class ToolPingSweep(Tool):
         """
         return self.__class__.__name__
 
-    def exec(self, arguments: dict) -> any:
+    def exec(self, arguments: dict) -> Any:
         """
         Invokes the tool with the provided arguments.
         """
         # Create an instance of the Arguments dataclass
-        args = self.Arguments(arguments)
+        args = self.Arguments(
+            ip_cidr=arguments.get("ip_cidr"),
+            timeout_s=arguments.get("timeout_s")
+        )
 
         # Call the ping_sweep method with the arguments
         return self.ping_sweep(args)
@@ -82,13 +89,16 @@ class ToolPingSweep(Tool):
         :param args: Arguments containing the CIDR IP address and timeout.
         :return: The XML output from nmap.
         """
-        # Validate the CIDR IP address
-        cidr = CIDRIPContainer(args.ip_cidr)
-
-        # Validate the timeout
-        timeout = TimeoutSecContainer(args.timeout_s)
 
         # Execute the command and capture the output
-        command = ["nmap", "-oX", "-", "-sn", "-PE", "--max-retries", "0", "--host-timeout", f"{timeout}s", f"{cidr}"]
+        command = [
+            "nmap",
+            "-oX",
+            "-",
+            "-sn",
+            "-PE",
+            "--max-retries", "0",
+            "--host-timeout", f"{args.timeout_s}s",
+            f"{args.ip_cidr}"]
         result = CmdExec.execute(command)
         return result

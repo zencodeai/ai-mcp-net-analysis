@@ -3,7 +3,9 @@ import logging
 from utils import ConfigParser
 from utils import Logger, LoggerFactory
 from utils import CIDRIPContainer
-from utils import CmdExec
+
+from mcp.types import Tool as MCPTool
+from tools.tool import Tool as ServerTool
 
 
 def _main():
@@ -37,14 +39,29 @@ def _main():
     print(f"Is IPv4: {cidr.is_ipv4()}")
     print(f"Is IPv6: {cidr.is_ipv6()}")
 
-    # Example command execution
-    command = ["nmap", "-oX", "-", "-sn", "-PE", str(cidr)]
-    result = CmdExec.execute(command)
-    print("Command executed successfully.")
-    print(result)
-
     log = logging.getLogger(__name__)
     log.info("This is an info message from the main function.")
+
+    # Get tools metadata
+    tools_metadata: list[MCPTool] = ServerTool.get_tools()
+    print("Tools metadata:")
+    for tool in tools_metadata:
+        print(60 * '-')
+        print(f"Tool Name: {tool.name}")
+        print(f"Tool Description: {tool.description}")
+        print(f"Tool Input Schema: {tool.inputSchema}")
+    print(60 * '-')
+
+    args = dict(
+        ip_cidr="192.168.1.0/24",
+        # ip_cidr="test",
+        timeout_s=10
+    )
+
+    # Execute a tool
+    result: str = ServerTool.exec_tool("ToolPingSweep", args)
+    print("Tool execution result:")
+    print(result)
 
 
 # Application entry point

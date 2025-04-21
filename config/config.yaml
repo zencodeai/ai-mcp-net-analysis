@@ -1,7 +1,7 @@
 mcp:
-  name: "AI-MCP-NET-ANALYSIS"
+  name: "ai-mcp-net-analysis"
   version: "1.0.0"
-  description: "AI-MCP-NET-ANALYSIS is a microservice for analyzing network data using AI."
+  description: "ai-mcp-net-analysis is a microservice for analyzing network data using LLMs."
 
 logging:
   name: "ai-mcp-net-analysis-server"

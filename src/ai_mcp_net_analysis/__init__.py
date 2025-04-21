@@ -1,4 +1,4 @@
-from .server_bak import serve
+from .server import serve
 
 
 def main():
@@ -6,9 +6,6 @@ def main():
     import asyncio
 
     asyncio.run(serve())
-
-
-__all__ = ["main"]
 
 
 if __name__ == "__main__":
