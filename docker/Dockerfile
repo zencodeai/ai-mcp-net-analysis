@@ -1,5 +1,6 @@
 # Use a lightweight Linux distribution as the base image
 FROM kalilinux/kali-rolling
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -17,18 +18,26 @@ RUN apt-get update && apt-get install -y \
     libcap2-bin \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-# Install nodejs
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
-
-# Install MCP instpector
-RUN yes | npm install @modelcontextprotocol/inspector
-
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy pyproject.toml into the container
-COPY pyproject.toml /app/
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
+
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
+
+# Add project files to the container
+ADD . /app
+
+# Cleanup
+RUN rm -rf /app/.git
+RUN rm -rf /app/.gitignore
+RUN rm -rf /app/.vscode
+RUN rm -rf /app/docker
+RUN rm -rf /app/tests
+RUN rm -f /app/log/*.log
+RUN find /app -name "*.pyc" -delete
 
 # Create a virtual environment and install dependencies
 RUN rm -rf /app/venv
@@ -39,4 +48,7 @@ RUN . /app/.venv/bin/activate
 RUN uv sync
 
 # Update PATH to point to the virtual environment
-ENV PATH="/app/venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Entry point to run the application
+ENTRYPOINT ["uv", "run", "src/ai_mcp_net_analysis"]

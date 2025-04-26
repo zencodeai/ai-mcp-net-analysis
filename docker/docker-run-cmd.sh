@@ -4,5 +4,5 @@
 source ./docker-common.sh
 
 # Run the Docker image with a bash shell
-docker run --rm -it -v ${PROJECT_ROOT}:/app --network host --privileged --name ${PROJECT_NAME}-tmp ${PROJECT_NAME} /bin/bash
+docker run --rm -i -it --init --network host --privileged --entrypoint /bin/bash --name ${PROJECT_NAME}-tmp ${PROJECT_NAME}
 
